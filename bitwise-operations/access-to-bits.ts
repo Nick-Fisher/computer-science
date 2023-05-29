@@ -1,20 +1,41 @@
 // A function that gets a Uint8Array and provides the ability to access a bit of a certain element
 
 interface IBitGetter {
-  get: (element: number, index: number) => number;
-  set: (element: number, index: number, value: number) => number;
+  get: (elementIndex: number, bitIndex: number) => number;
+  set: (elementIndex: number, bitIndex: number, value: number) => number;
 }
 
 const createBitGetter = (array: Uint8Array): IBitGetter => {
+  const validate = (elementIndex: number, bitIndex: number) => {
+    if (bitIndex < 0) {
+      throw new Error('Bit index must be positive');
+    }
 
-  const get = (element: number, index: number) => {
-    return (array[element] & (1 << index)) !== 0 ? 1 : 0;
+    if (elementIndex < 0) {
+      throw new Error('Element index must be greater than 0');
+    }
+
+    if (elementIndex > array.length) {
+      throw new Error('There is no element at index ' + elementIndex);
+    }
+
+    if (array.BYTES_PER_ELEMENT * 8 < bitIndex) {
+      throw new Error(
+        'Bit index cannot be greater than amount of bits in array element'
+      );
+    }
   };
 
-  const set = (element: number, index: number, value: number) => {
+  const get = (elementIndex: number, bitIndex: number) => {
+    validate(elementIndex, bitIndex);
+    return (array[elementIndex] & (1 << bitIndex)) !== 0 ? 1 : 0;
+  };
+
+  const set = (elementIndex: number, bitIndex: number, value: number) => {
+    validate(elementIndex, bitIndex);
     return value === 0
-      ? array[element] & ~(1 << index)
-      : array[element] | (1 << index);
+      ? array[elementIndex] & ~(1 << bitIndex)
+      : array[elementIndex] | (1 << bitIndex);
   };
 
   return {
@@ -30,7 +51,7 @@ console.log(bitGetter.get(0, 2)); // 1
 console.log(bitGetter.get(1, 2)); // 0
 // ```
 
-// ## expand functionality of function and give an abillity to set a value of exact bit
+// ## expand functionality of function and give an ability to set a value of exact bit
 
 // ```js
 // const bitAccessor = createBitAccessor(new Uint8Array([0b1110, 0b1101]));
