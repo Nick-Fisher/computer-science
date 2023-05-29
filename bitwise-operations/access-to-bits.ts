@@ -1,16 +1,25 @@
 // A function that gets a Uint8Array and provides the ability to access a bit of a certain element
 
 interface IBitGetter {
-  get: (position: number, index: number) => number;
+  get: (element: number, index: number) => number;
+  set: (element: number, index: number, value: number) => number;
 }
 
 const createBitGetter = (array: Uint8Array): IBitGetter => {
+
   const get = (element: number, index: number) => {
     return (array[element] & (1 << index)) !== 0 ? 1 : 0;
   };
 
+  const set = (element: number, index: number, value: number) => {
+    return value === 0
+      ? array[element] & ~(1 << index)
+      : array[element] | (1 << index);
+  };
+
   return {
     get,
+    set,
   };
 };
 
